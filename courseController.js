@@ -6,12 +6,23 @@ const eta = new Eta({ views: `${Deno.cwd()}/templates/` });
 const showCourses = async (c) => {
   const courses = await courseService.getCourses();
   console.log("showCourses - courses:", courses);
-  return c.html(await eta.render("courses.eta", { courses }));
+  return c.html(await eta.render("courses.eta", { courses, errors: [], formData: {} }));
 };
 
 const addCourse = async (c) => {
   const body = await c.req.parseBody();
   const { name } = body;
+  const errors = [];
+
+  if (typeof name !== 'string' || name.length < 4) {
+    errors.push("The course name should be a string of at least 4 characters.");
+  }
+
+  if (errors.length > 0) {
+    const courses = await courseService.getCourses();
+    return c.html(await eta.render("courses.eta", { courses, errors, formData: body }));
+  }
+
   const id = crypto.randomUUID();
   await courseService.addCourse({ id, name });
   console.log("addCourse - Added course:", { id, name });

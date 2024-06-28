@@ -5,9 +5,18 @@
 </head>
 <body>
   <h1>Courses</h1>
+  
+  <% if (it.errors.length > 0) { %>
+    <ul>
+      <% it.errors.forEach(error => { %>
+        <li><%= error %></li>
+      <% }) %>
+    </ul>
+  <% } %>
+
   <form method="POST" action="/courses">
     <label for="course-name">Course name:</label>
-    <input type="text" id="course-name" name="name" required>
+    <input type="text" id="course-name" name="name" value="<%= it.formData.name || '' %>" required>
     <button type="submit">Add</button>
   </form>
   <ul>
@@ -15,8 +24,7 @@
       <% it.courses.forEach(course => { %>
         <li>
           <a href="/courses/<%= course.id %>">Course: <%= course.name %></a>
-          <form method="POST" action="/courses/<%= course.id %>?_method=DELETE" style="display:inline;">
-            <input type="hidden" name="_method" value="DELETE">
+          <form method="POST" action="/courses/<%= course.id %>/delete" style="display:inline;">
             <button type="submit">Delete</button>
           </form>
         </li>
