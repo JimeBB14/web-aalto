@@ -1,9 +1,13 @@
-import { Eta } from "https://deno.land/x/eta@v3.4.0/src/index.ts";
 import { Hono } from "https://deno.land/x/hono@v3.12.11/mod.ts";
+import {
+  getSignedCookie,
+  setSignedCookie,
+} from "https://deno.land/x/hono@v3.12.11/helper.ts";
 import * as courseController from "./courseController.js";
 
-const eta = new Eta({ views: `${Deno.cwd()}/templates/` });
 const app = new Hono();
+const secret = "secret";
+const sessionData = new Map(); 
 
 app.use('*', async (c, next) => {
   const method = c.req.method.toUpperCase();
@@ -13,7 +17,18 @@ app.use('*', async (c, next) => {
       c.req.method = body._method.toUpperCase();
     }
   }
+  
+  let sessionId = await getSignedCookie(c, secret, "sessionId");
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    await setSignedCookie(c, "sessionId", sessionId, secret, {
+      path: "/",
+    });
+  }
+  c.req.sessionId = sessionId; 
+  c.req.session = sessionData.get(sessionId) || {}; 
   await next();
+  sessionData.set(sessionId, c.req.session); 
 });
 
 app.get("/courses", (c) => courseController.showCourses(c));

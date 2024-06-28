@@ -5,7 +5,6 @@ const eta = new Eta({ views: `${Deno.cwd()}/templates/` });
 
 const showCourses = async (c) => {
   const courses = await courseService.getCourses();
-  console.log("showCourses - courses:", courses);
   return c.html(await eta.render("courses.eta", { courses, errors: [], formData: {} }));
 };
 
@@ -25,7 +24,6 @@ const addCourse = async (c) => {
 
   const id = crypto.randomUUID();
   await courseService.addCourse({ id, name });
-  console.log("addCourse - Added course:", { id, name });
   return c.redirect("/courses");
 };
 
@@ -35,20 +33,33 @@ const showCourse = async (c) => {
   if (!course) {
     return c.text('Course not found', 404);
   }
-  console.log("showCourse - course:", course);
-  return c.html(await eta.render("course.eta", { course }));
+  
+  const session = c.req.session;
+  const feedbackGiven = session[`feedback_${courseId}`];
+
+  if (feedbackGiven) {
+    return c.html(await eta.render("course.eta", { course, feedbackGiven: true }));
+  }
+
+  return c.html(await eta.render("course.eta", { course, feedbackGiven: false }));
 };
 
 const deleteCourse = async (c) => {
   const { courseId } = c.req.param();
   await courseService.deleteCourse(courseId);
-  console.log("deleteCourse - Deleted course:", courseId);
   return c.redirect("/courses");
 };
 
 const addFeedback = async (c) => {
   const { courseId, value } = c.req.param();
+  const session = c.req.session;
+
+  if (session[`feedback_${courseId}`]) {
+    return c.redirect(`/courses/${courseId}`);
+  }
+
   await courseService.addFeedback(courseId, value);
+  session[`feedback_${courseId}`] = true;
   return c.redirect(`/courses/${courseId}`);
 };
 
