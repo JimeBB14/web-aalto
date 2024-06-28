@@ -20,5 +20,6 @@
     <form action="/feedbacks/5" method="post">
         <button type="submit">Excellent</button>
     </form>
+    <a href="/courses">Manage Courses</a>
 </body>
 </html>

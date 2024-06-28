@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Courses</title>
+</head>
+<body>
+  <h1>Courses</h1>
+  <form method="POST" action="/courses">
+    <label for="course-name">Course name:</label>
+    <input type="text" id="course-name" name="name" required>
+    <button type="submit">Add</button>
+  </form>
+  <ul>
+    <% if (it.courses.length > 0) { %>
+      <% it.courses.forEach(course => { %>
+        <li>
+          <a href="/courses/<%= course.id %>">Course: <%= course.name %></a>
+          <form method="POST" action="/courses/<%= course.id %>?_method=DELETE" style="display:inline;">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit">Delete</button>
+          </form>
+        </li>
+      <% }) %>
+    <% } else { %>
+      <li>No courses available</li>
+    <% } %>
+  </ul>
+</body>
+</html>
